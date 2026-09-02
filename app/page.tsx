@@ -6,6 +6,7 @@ import Testimonials from '@/components/sections/Testimonials';
 import Stats from '@/components/sections/Stats';
 import InstagramGallery from '@/components/sections/InstagramGallery';
 import Newsletter from '@/components/sections/Newsletter';
+import AiAssistant from '@/components/sections/AiAssistant';
 
 export default function Home() {
   return (
@@ -13,6 +14,8 @@ export default function Home() {
       <Hero />
       <FeaturedDishes />
       <TodaySpecial />
+      <AiAssistant />
+
       <ChefIntro />
       <Testimonials />
       <Stats />
