@@ -14,13 +14,12 @@ export default function Home() {
       <Hero />
       <FeaturedDishes />
       <TodaySpecial />
-      <AiAssistant />
-
       <ChefIntro />
       <Testimonials />
       <Stats />
       <InstagramGallery />
       <Newsletter />
+      <AiAssistant />
     </>
   );
 }
