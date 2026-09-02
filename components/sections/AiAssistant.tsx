@@ -29,47 +29,50 @@ export default function AiAssistant() {
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 max-w-2xl mx-auto my-8">
-      <h3 className="text-2xl font-bold text-orange-600 mb-2">
-        🍕 Ask our AI Assistant 
-      </h3>
+    <div className="bg-background py-16 px-4">
+      <div className="max-w-3xl mx-auto bg-card rounded-2xl shadow-xl border border-border p-6 sm:p-8">
 
-      <p className="text-gray-500 text-sm mb-4">
-        Ask about our menu, specials, or ingredients!
-      </p>
+        <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 text-center">
+          🍕 Ask our AI Assistant
+        </h3>
 
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <input
-          type="text"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          placeholder="e.g., Do you have vegan options?"
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-          disabled={loading}
-        />
+        <p className="text-muted-foreground text-sm sm:text-base mb-6 text-center">
+          Ask about our menu, specials, or ingredients!
+        </p>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition disabled:bg-gray-400"
-        >
-          {loading ? 'Thinking...' : 'Ask'}
-        </button>
-      </form>
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+          <input
+            type="text"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder="e.g., Do you have vegan options?"
+            className="flex-1 h-12 px-4 border border-input rounded-xl bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+            disabled={loading}
+          />
 
-      {error && (
-        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-          ⚠️ {error}
-        </div>
-      )}
+          <button
+            type="submit"
+            disabled={loading}
+            className="h-12 px-7 bg-primary text-primary-foreground font-medium rounded-xl shadow-sm hover:bg-primary/90 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Thinking...' : 'Ask'}
+          </button>
+        </form>
 
-      {answer && (
-        <div className="mt-4 p-4 bg-gray-50 border-l-4 border-orange-500 rounded-r-lg">
-          <p className="text-gray-700 font-medium">
-            🤖 {answer}
-          </p>
-        </div>
-      )}
+        {error && (
+          <div className="mt-5 p-4 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive text-sm">
+            ⚠️ {error}
+          </div>
+        )}
+
+        {answer && (
+          <div className="mt-6 p-5 bg-muted/50 border border-border rounded-xl">
+            <p className="text-foreground font-medium leading-relaxed">
+              🤖 {answer}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
