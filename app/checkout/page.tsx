@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
-import { supabase } from '@/lib/supabase';
 import { useCart } from '@/components/cart/CartContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -38,49 +37,39 @@ export default function CheckoutPage() {
     try {
       setIsSubmitting(true);
 
-      const orderId = crypto.randomUUID();
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customerName: customerName.trim(),
+          customerPhone: customerPhone.trim(),
+          customerEmail: customerEmail.trim(),
 
-      const { error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          id: orderId,
-          customer_name: customerName.trim(),
-          customer_phone: customerPhone.trim() || null,
-          customer_email: customerEmail.trim() || null,
-          total_amount: cartTotal,
-          status: 'Pending',
-        });
+          items: cart.map((item) => ({
+            id: item.id,
+            quantity: item.quantity,
+          })),
+        }),
+      });
 
-      if (orderError) {
-        console.error('Order error:', orderError);
-        toast.error('Could not create order');
-        return;
-      }
+      const data = await response.json();
 
-      const orderItems = cart.map((item) => ({
-        order_id: orderId,
-        menu_item_id: item.id,
-        item_name: item.name,
-        quantity: item.quantity,
-        unit_price: item.price,
-      }));
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) {
+      if (!response.ok) {
         console.error(
-          'Order items error:',
-          itemsError
+          'Order API error:',
+          data
         );
 
         toast.error(
-          'Order created, but items could not be saved'
+          data.error || 'Could not create order'
         );
 
         return;
       }
+
+      const orderId = data.orderId;
 
       localStorage.setItem(
         'latest-order-id',
