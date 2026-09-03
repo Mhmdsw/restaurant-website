@@ -3,7 +3,8 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { createClient } from "@supabase/supabase-js"
+
+import { supabase } from "@/lib/supabase"
 
 import {
   Form,
@@ -17,14 +18,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-
-
-// Supabase Client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-
 
 // Validation Schema
 const formSchema = z.object({
@@ -55,9 +48,7 @@ const formSchema = z.object({
   special_requests: z.string().optional(),
 })
 
-
 export default function ReservationsPage() {
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
 
@@ -72,21 +63,14 @@ export default function ReservationsPage() {
     },
   })
 
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-
+  async function onSubmit(
+    values: z.infer<typeof formSchema>
+  ) {
     try {
-
-      console.log(
-        "Supabase URL:",
-        process.env.NEXT_PUBLIC_SUPABASE_URL
-      )
-
       console.log(
         "Reservation Data:",
         values
       )
-
 
       const { error } = await supabase
         .from("reservations")
@@ -103,9 +87,7 @@ export default function ReservationsPage() {
           }
         ])
 
-
       if (error) {
-
         console.error(
           "Supabase Error:",
           error
@@ -118,18 +100,16 @@ export default function ReservationsPage() {
         return
       }
 
-
-      console.log("Reservation created successfully")
+      console.log(
+        "Reservation created successfully"
+      )
 
       alert(
         "Reservation made successfully!"
       )
 
       form.reset()
-
-
     } catch (error) {
-
       console.error(
         "Unexpected Error:",
         error
@@ -138,20 +118,15 @@ export default function ReservationsPage() {
       alert(
         "Something went wrong"
       )
-
     }
   }
 
-
-
   return (
-
     <div className="max-w-lg mx-auto py-10 px-4">
 
       <h1 className="text-3xl font-bold mb-6">
         Make a Reservation
       </h1>
-
 
       <Form {...form}>
 
@@ -161,7 +136,6 @@ export default function ReservationsPage() {
           }
           className="space-y-6"
         >
-
 
           <FormField
             control={form.control}
@@ -189,8 +163,6 @@ export default function ReservationsPage() {
 
             )}
           />
-
-
 
           <FormField
             control={form.control}
@@ -220,8 +192,6 @@ export default function ReservationsPage() {
             )}
           />
 
-
-
           <FormField
             control={form.control}
             name="phone"
@@ -249,8 +219,6 @@ export default function ReservationsPage() {
             )}
           />
 
-
-
           <FormField
             control={form.control}
             name="guests"
@@ -268,7 +236,6 @@ export default function ReservationsPage() {
                     type="number"
                     min="1"
                     {...field}
-
                     onChange={(e) =>
                       field.onChange(
                         Number(e.target.value)
@@ -284,8 +251,6 @@ export default function ReservationsPage() {
 
             )}
           />
-
-
 
           <FormField
             control={form.control}
@@ -314,8 +279,6 @@ export default function ReservationsPage() {
             )}
           />
 
-
-
           <FormField
             control={form.control}
             name="time"
@@ -342,8 +305,6 @@ export default function ReservationsPage() {
 
             )}
           />
-
-
 
           <FormField
             control={form.control}
@@ -372,8 +333,6 @@ export default function ReservationsPage() {
             )}
           />
 
-
-
           <Button
             type="submit"
             className="w-full"
@@ -381,13 +340,10 @@ export default function ReservationsPage() {
             Submit Reservation
           </Button>
 
-
         </form>
 
       </Form>
 
-
     </div>
-
   )
 }
