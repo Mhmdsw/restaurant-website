@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Menu, X, Utensils } from 'lucide-react';
+import { Menu, X, Utensils, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import ThemeToggle from './ThemeToggle';
 import { cn } from '@/lib/utils';
+import { useCart } from '@/components/cart/CartContext';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -25,12 +26,18 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const { cartCount } = useCart();
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
+
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   return (
@@ -44,7 +51,10 @@ export default function Navbar() {
     >
       <div className="container mx-auto flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 text-2xl font-bold">
+        <Link
+          href="/"
+          className="flex items-center gap-2 text-2xl font-bold"
+        >
           <Utensils className="h-6 w-6" />
           <span>La Maison</span>
         </Link>
@@ -63,52 +73,104 @@ export default function Navbar() {
               )}
             >
               {link.label}
+
               {pathname === link.href && (
                 <motion.div
                   layoutId="navbar-indicator"
                   className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary"
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  transition={{
+                    type: 'spring',
+                    stiffness: 380,
+                    damping: 30,
+                  }}
                 />
               )}
             </Link>
           ))}
         </nav>
 
-        {/* Right side: Dark mode toggle + Reserve button + Mobile menu */}
+        {/* Right side */}
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          <Button asChild className="hidden md:inline-flex">
-            <Link href="/reservations">Reserve a Table</Link>
+
+          {/* Cart */}
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="relative"
+          >
+            <Link href="/cart">
+              <ShoppingCart className="h-5 w-5" />
+
+              {cartCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs font-bold text-primary-foreground">
+                  {cartCount}
+                </span>
+              )}
+
+              <span className="sr-only">
+                Shopping cart
+              </span>
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            className="hidden md:inline-flex"
+          >
+            <Link href="/reservations">
+              Reserve a Table
+            </Link>
           </Button>
 
           {/* Mobile menu */}
-          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+          <Sheet
+            open={isMobileMenuOpen}
+            onOpenChange={setIsMobileMenuOpen}
+          >
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+              >
                 <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle menu</span>
+                <span className="sr-only">
+                  Toggle menu
+                </span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[250px] sm:w-[300px]">
-              <div className="flex flex-col h-full">
+
+            <SheetContent
+              side="right"
+              className="w-[250px] sm:w-[300px]"
+            >
+              <div className="flex h-full flex-col">
                 <div className="flex items-center justify-between">
                   <Link
                     href="/"
                     className="flex items-center gap-2 text-xl font-bold"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={() =>
+                      setIsMobileMenuOpen(false)
+                    }
                   >
                     <Utensils className="h-5 w-5" />
                     <span>La Maison</span>
                   </Link>
+
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={() =>
+                      setIsMobileMenuOpen(false)
+                    }
                   >
                     <X className="h-5 w-5" />
                   </Button>
                 </div>
-                <nav className="flex flex-col gap-4 mt-8">
+
+                <nav className="mt-8 flex flex-col gap-4">
                   {navLinks.map((link) => (
                     <Link
                       key={link.href}
@@ -119,13 +181,41 @@ export default function Navbar() {
                           ? 'text-primary'
                           : 'text-muted-foreground'
                       )}
-                      onClick={() => setIsMobileMenuOpen(false)}
+                      onClick={() =>
+                        setIsMobileMenuOpen(false)
+                      }
                     >
                       {link.label}
                     </Link>
                   ))}
-                  <Button asChild className="mt-4">
-                    <Link href="/reservations" onClick={() => setIsMobileMenuOpen(false)}>
+
+                  {/* Mobile cart */}
+                  <Link
+                    href="/cart"
+                    className="flex items-center gap-2 text-lg font-medium text-muted-foreground transition-colors hover:text-primary"
+                    onClick={() =>
+                      setIsMobileMenuOpen(false)
+                    }
+                  >
+                    <ShoppingCart className="h-5 w-5" />
+                    Cart
+                    {cartCount > 0 && (
+                      <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground">
+                        {cartCount}
+                      </span>
+                    )}
+                  </Link>
+
+                  <Button
+                    asChild
+                    className="mt-4"
+                  >
+                    <Link
+                      href="/reservations"
+                      onClick={() =>
+                        setIsMobileMenuOpen(false)
+                      }
+                    >
                       Reserve a Table
                     </Link>
                   </Button>

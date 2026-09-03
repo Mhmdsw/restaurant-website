@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import {
   Star,
   Search,
+  ShoppingCart,
 } from "lucide-react";
 
 import {
@@ -22,6 +23,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+import { useCart } from "@/components/cart/CartContext";
+import { toast } from "sonner";
 
 const categories = [
   "All",
@@ -70,6 +74,19 @@ export default function MenuPage() {
 
   const [sortBy, setSortBy] =
     useState("rating");
+
+  const { addToCart } = useCart();
+
+  const handleAddToCart = (dish: MenuItem) => {
+    addToCart({
+      id: dish.id,
+      name: dish.name,
+      price: Number(dish.price),
+      image: dish.image,
+    });
+
+    toast.success(`${dish.name} added to cart`);
+  };
 
   // ============================================
   // LOAD MENU FROM SUPABASE
@@ -449,6 +466,17 @@ export default function MenuPage() {
                       )}
                     </div>
                   )}
+
+                <Button
+                  className="mt-4 w-full"
+                  onClick={() =>
+                    handleAddToCart(dish)
+                  }
+                >
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  Add to Cart
+                </Button>
+
               </CardContent>
             </Card>
           ))}
