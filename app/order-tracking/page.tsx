@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ type OrderTracking = {
   created_at: string;
 };
 
-export default function OrderTrackingPage() {
+function OrderTrackingContent() {
   const searchParams = useSearchParams();
 
   const [orderId, setOrderId] = useState("");
@@ -98,7 +98,9 @@ export default function OrderTrackingPage() {
     <main className="min-h-screen bg-muted/30 py-16">
       <div className="container mx-auto max-w-2xl px-4">
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold">Track Your Order</h1>
+          <h1 className="text-4xl font-bold">
+            Track Your Order
+          </h1>
 
           <p className="mt-2 text-muted-foreground">
             Enter your order ID to check your current order status.
@@ -107,7 +109,9 @@ export default function OrderTrackingPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Order ID</CardTitle>
+            <CardTitle>
+              Order ID
+            </CardTitle>
           </CardHeader>
 
           <CardContent>
@@ -123,10 +127,15 @@ export default function OrderTrackingPage() {
                 }}
               />
 
-              <Button onClick={() => trackOrder()} disabled={loading}>
+              <Button
+                onClick={() => trackOrder()}
+                disabled={loading}
+              >
                 <Search className="mr-2 h-4 w-4" />
 
-                {loading ? "Checking..." : "Track Order"}
+                {loading
+                  ? "Checking..."
+                  : "Track Order"}
               </Button>
             </div>
           </CardContent>
@@ -136,7 +145,9 @@ export default function OrderTrackingPage() {
           <Card className="mt-6">
             <CardHeader>
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <CardTitle>Your Order</CardTitle>
+                <CardTitle>
+                  Your Order
+                </CardTitle>
 
                 <Badge className="text-sm">
                   {order.status}
@@ -179,25 +190,42 @@ export default function OrderTrackingPage() {
               </div>
 
               <div className="grid grid-cols-4 gap-2 text-center text-xs sm:text-sm">
-                {["Pending", "Preparing", "Ready", "Completed"].map(
-                  (status) => (
-                    <div
-                      key={status}
-                      className={`rounded-lg border p-3 ${
-                        order.status === status
-                          ? "font-bold"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      {status}
-                    </div>
-                  )
-                )}
+                {[
+                  "Pending",
+                  "Preparing",
+                  "Ready",
+                  "Completed",
+                ].map((status) => (
+                  <div
+                    key={status}
+                    className={`rounded-lg border p-3 ${
+                      order.status === status
+                        ? "font-bold"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {status}
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
         )}
       </div>
     </main>
+  );
+}
+
+export default function OrderTrackingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto px-4 py-24 text-center">
+          Loading order tracking...
+        </div>
+      }
+    >
+      <OrderTrackingContent />
+    </Suspense>
   );
 }
