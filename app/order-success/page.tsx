@@ -3,7 +3,7 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, PackageSearch } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -42,21 +42,37 @@ function OrderSuccessContent() {
               </div>
             )}
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-              <Button asChild>
-                <Link href="/menu">
-                  Order More Food
-                </Link>
-              </Button>
+            <div className="mt-8 flex flex-col gap-3">
+              {orderId && (
+                <Button asChild>
+                  <Link
+                    href={`/order-tracking?order=${encodeURIComponent(orderId)}`}
+                  >
+                    <PackageSearch className="mr-2 h-4 w-4" />
+                    Track Your Order
+                  </Link>
+                </Button>
+              )}
 
-              <Button
-                asChild
-                variant="outline"
-              >
-                <Link href="/">
-                  Back to Home
-                </Link>
-              </Button>
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+                <Button
+                  asChild
+                  variant="outline"
+                >
+                  <Link href="/menu">
+                    Order More Food
+                  </Link>
+                </Button>
+
+                <Button
+                  asChild
+                  variant="outline"
+                >
+                  <Link href="/">
+                    Back to Home
+                  </Link>
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

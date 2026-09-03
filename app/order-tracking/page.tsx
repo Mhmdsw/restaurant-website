@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +12,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Clock, ChefHat, CheckCircle, PackageCheck } from "lucide-react";
+import {
+  Search,
+  Clock,
+  ChefHat,
+  CheckCircle,
+  PackageCheck,
+} from "lucide-react";
 import { toast } from "sonner";
 
 type OrderTracking = {
@@ -22,12 +29,16 @@ type OrderTracking = {
 };
 
 export default function OrderTrackingPage() {
+  const searchParams = useSearchParams();
+
   const [orderId, setOrderId] = useState("");
   const [order, setOrder] = useState<OrderTracking | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function trackOrder() {
-    if (!orderId.trim()) {
+  async function trackOrder(id?: string) {
+    const idToTrack = id || orderId.trim();
+
+    if (!idToTrack) {
       toast.error("Please enter your order ID");
       return;
     }
@@ -36,7 +47,7 @@ export default function OrderTrackingPage() {
     setOrder(null);
 
     const { data, error } = await supabase.rpc("get_order_tracking", {
-      order_uuid: orderId.trim(),
+      order_uuid: idToTrack,
     });
 
     setLoading(false);
@@ -54,6 +65,15 @@ export default function OrderTrackingPage() {
 
     setOrder(data[0]);
   }
+
+  useEffect(() => {
+    const orderFromUrl = searchParams.get("order");
+
+    if (orderFromUrl) {
+      setOrderId(orderFromUrl);
+      trackOrder(orderFromUrl);
+    }
+  }, [searchParams]);
 
   function getStatusIcon(status: string) {
     switch (status) {
@@ -103,7 +123,7 @@ export default function OrderTrackingPage() {
                 }}
               />
 
-              <Button onClick={trackOrder} disabled={loading}>
+              <Button onClick={() => trackOrder()} disabled={loading}>
                 <Search className="mr-2 h-4 w-4" />
 
                 {loading ? "Checking..." : "Track Order"}
