@@ -38,18 +38,18 @@ export default function CheckoutPage() {
     try {
       setIsSubmitting(true);
 
-      const { data: order, error: orderError } =
-        await supabase
-          .from('orders')
-          .insert({
-            customer_name: customerName.trim(),
-            customer_phone: customerPhone.trim() || null,
-            customer_email: customerEmail.trim() || null,
-            total_amount: cartTotal,
-            status: 'Pending',
-          })
-          .select()
-          .single();
+      const orderId = crypto.randomUUID();
+
+      const { error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          id: orderId,
+          customer_name: customerName.trim(),
+          customer_phone: customerPhone.trim() || null,
+          customer_email: customerEmail.trim() || null,
+          total_amount: cartTotal,
+          status: 'Pending',
+        });
 
       if (orderError) {
         console.error('Order error:', orderError);
@@ -58,17 +58,16 @@ export default function CheckoutPage() {
       }
 
       const orderItems = cart.map((item) => ({
-        order_id: order.id,
+        order_id: orderId,
         menu_item_id: item.id,
         item_name: item.name,
         quantity: item.quantity,
         unit_price: item.price,
       }));
 
-      const { error: itemsError } =
-        await supabase
-          .from('order_items')
-          .insert(orderItems);
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
 
       if (itemsError) {
         console.error(
@@ -88,7 +87,7 @@ export default function CheckoutPage() {
       toast.success('Order placed successfully');
 
       router.push(
-        `/order-success?order=${order.id}`
+        `/order-success?order=${orderId}`
       );
     } catch (error) {
       console.error('Checkout error:', error);
@@ -101,7 +100,6 @@ export default function CheckoutPage() {
   return (
     <div className="container mx-auto px-4 py-24">
       <div className="mx-auto max-w-3xl">
-
         <h1 className="text-4xl font-bold">
           Checkout
         </h1>
@@ -111,17 +109,15 @@ export default function CheckoutPage() {
         </p>
 
         <div className="mt-8 grid gap-8 md:grid-cols-2">
-
           <Card>
             <CardContent className="space-y-4 p-6">
-
               <div>
                 <label className="mb-2 block text-sm font-medium">
                   Full Name *
                 </label>
 
                 <Input
-                  placeholder="Mohammad Sweidan"
+                  placeholder="Your full name"
                   value={customerName}
                   onChange={(e) =>
                     setCustomerName(e.target.value)
@@ -157,19 +153,16 @@ export default function CheckoutPage() {
                   }
                 />
               </div>
-
             </CardContent>
           </Card>
 
           <Card>
             <CardContent className="p-6">
-
               <h2 className="text-2xl font-bold">
                 Order Summary
               </h2>
 
               <div className="mt-6 space-y-3">
-
                 {cart.map((item) => (
                   <div
                     key={item.id}
@@ -188,7 +181,6 @@ export default function CheckoutPage() {
                     </span>
                   </div>
                 ))}
-
               </div>
 
               <div className="my-4 border-t" />
@@ -211,10 +203,8 @@ export default function CheckoutPage() {
                   ? 'Placing Order...'
                   : 'Place Order'}
               </Button>
-
             </CardContent>
           </Card>
-
         </div>
       </div>
     </div>
