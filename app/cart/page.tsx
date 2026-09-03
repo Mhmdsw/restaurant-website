@@ -2,11 +2,19 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
+import {
+  Minus,
+  Plus,
+  Trash2,
+  ShoppingBag,
+} from 'lucide-react';
 
 import { useCart } from '@/components/cart/CartContext';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+} from '@/components/ui/card';
 
 export default function CartPage() {
   const {
@@ -17,6 +25,10 @@ export default function CartPage() {
     cartTotal,
     clearCart,
   } = useCart();
+
+  // ============================================
+  // EMPTY CART
+  // ============================================
 
   if (cart.length === 0) {
     return (
@@ -40,8 +52,15 @@ export default function CartPage() {
     );
   }
 
+  // ============================================
+  // CART PAGE
+  // ============================================
+
   return (
     <div className="container mx-auto px-4 py-24">
+
+      {/* HEADER */}
+
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-4xl font-bold">
@@ -62,10 +81,17 @@ export default function CartPage() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-3">
+
+        {/* CART ITEMS */}
+
         <div className="space-y-4 lg:col-span-2">
+
           {cart.map((item) => (
             <Card key={item.id}>
               <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
+
+                {/* IMAGE */}
+
                 {item.image && (
                   <div className="relative h-28 w-full overflow-hidden rounded-md sm:w-32">
                     <Image
@@ -77,6 +103,8 @@ export default function CartPage() {
                   </div>
                 )}
 
+                {/* ITEM INFO */}
+
                 <div className="flex-1">
                   <h2 className="text-lg font-semibold">
                     {item.name}
@@ -87,7 +115,10 @@ export default function CartPage() {
                   </p>
                 </div>
 
+                {/* QUANTITY */}
+
                 <div className="flex items-center gap-2">
+
                   <Button
                     variant="outline"
                     size="icon"
@@ -111,7 +142,10 @@ export default function CartPage() {
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
+
                 </div>
+
+                {/* ITEM TOTAL */}
 
                 <div className="min-w-24 text-right font-bold">
                   $
@@ -120,6 +154,8 @@ export default function CartPage() {
                     item.quantity
                   ).toFixed(2)}
                 </div>
+
+                {/* REMOVE */}
 
                 <Button
                   variant="ghost"
@@ -130,14 +166,19 @@ export default function CartPage() {
                 >
                   <Trash2 className="h-5 w-5 text-red-500" />
                 </Button>
+
               </CardContent>
             </Card>
           ))}
+
         </div>
+
+        {/* ORDER SUMMARY */}
 
         <div>
           <Card>
             <CardContent className="p-6">
+
               <h2 className="text-2xl font-bold">
                 Order Summary
               </h2>
@@ -156,17 +197,25 @@ export default function CartPage() {
 
               <div className="flex items-center justify-between text-xl font-bold">
                 <span>Total</span>
+
                 <span>
                   ${cartTotal.toFixed(2)}
                 </span>
               </div>
 
+              {/* CHECKOUT */}
+
               <Button
+                asChild
                 className="mt-6 w-full"
                 size="lg"
               >
-                Proceed to Checkout
+                <Link href="/checkout">
+                  Proceed to Checkout
+                </Link>
               </Button>
+
+              {/* CONTINUE SHOPPING */}
 
               <Button
                 asChild
@@ -177,9 +226,11 @@ export default function CartPage() {
                   Continue Shopping
                 </Link>
               </Button>
+
             </CardContent>
           </Card>
         </div>
+
       </div>
     </div>
   );
