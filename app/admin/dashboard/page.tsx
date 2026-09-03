@@ -268,6 +268,31 @@ export default function AdminDashboard() {
     toast.success("Message deleted");
   }
 
+
+  // ============================================
+  // REFRESH AI KNOWLEDGE
+  // ============================================
+
+  async function refreshAIKnowledge() {
+    try {
+      const response = await fetch("/api/refresh-ai", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        console.error("AI refresh failed");
+        toast.error("Menu updated, but AI refresh failed");
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("AI refresh error:", error);
+      toast.error("Menu updated, but AI refresh failed");
+      return false;
+    }
+  }
+
   // ============================================
   // DELETE MENU ITEM
   // ============================================
@@ -292,6 +317,8 @@ export default function AdminDashboard() {
     setMenuItems((prev) =>
       prev.filter((item) => item.id !== id)
     );
+
+    await refreshAIKnowledge();
 
     toast.success("Menu item deleted");
   }
@@ -337,6 +364,8 @@ export default function AdminDashboard() {
     );
 
     setEditingItem(null);
+
+    await refreshAIKnowledge();
 
     toast.success("Menu item updated successfully!");
   }
@@ -404,6 +433,8 @@ export default function AdminDashboard() {
     });
 
     setShowAddMenu(false);
+
+    await refreshAIKnowledge();
 
     toast.success("New menu item added!");
   }
