@@ -46,14 +46,17 @@ function OrderTrackingContent() {
     setLoading(true);
     setOrder(null);
 
-    const { data, error } = await supabase.rpc("get_order_tracking", {
-      order_uuid: idToTrack,
-    });
+    const { data, error } = await supabase.rpc(
+      "get_order_tracking",
+      {
+        order_uuid: idToTrack,
+      }
+    );
 
     setLoading(false);
 
     if (error) {
-      console.error(error);
+      console.error("Tracking error:", error);
       toast.error("Could not track this order");
       return;
     }
@@ -64,6 +67,11 @@ function OrderTrackingContent() {
     }
 
     setOrder(data[0]);
+
+    localStorage.setItem(
+      "latest-order-id",
+      idToTrack
+    );
   }
 
   useEffect(() => {
@@ -71,7 +79,23 @@ function OrderTrackingContent() {
 
     if (orderFromUrl) {
       setOrderId(orderFromUrl);
+
+      localStorage.setItem(
+        "latest-order-id",
+        orderFromUrl
+      );
+
       trackOrder(orderFromUrl);
+
+      return;
+    }
+
+    const savedOrderId =
+      localStorage.getItem("latest-order-id");
+
+    if (savedOrderId) {
+      setOrderId(savedOrderId);
+      trackOrder(savedOrderId);
     }
   }, [searchParams]);
 
@@ -94,6 +118,17 @@ function OrderTrackingContent() {
     }
   }
 
+  const statuses = [
+    "Pending",
+    "Preparing",
+    "Ready",
+    "Completed",
+  ];
+
+  const currentStatusIndex = order
+    ? statuses.indexOf(order.status)
+    : -1;
+
   return (
     <main className="min-h-screen bg-muted/30 py-16">
       <div className="container mx-auto max-w-2xl px-4">
@@ -103,7 +138,7 @@ function OrderTrackingContent() {
           </h1>
 
           <p className="mt-2 text-muted-foreground">
-            Enter your order ID to check your current order status.
+            Check the current status of your order.
           </p>
         </div>
 
@@ -119,7 +154,9 @@ function OrderTrackingContent() {
               <Input
                 placeholder="Enter your order ID"
                 value={orderId}
-                onChange={(e) => setOrderId(e.target.value)}
+                onChange={(e) =>
+                  setOrderId(e.target.value)
+                }
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     trackOrder();
@@ -141,7 +178,13 @@ function OrderTrackingContent() {
           </CardContent>
         </Card>
 
-        {order && (
+        {loading && (
+          <div className="mt-6 text-center text-muted-foreground">
+            Checking your order...
+          </div>
+        )}
+
+        {order && !loading && (
           <Card className="mt-6">
             <CardHeader>
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -172,41 +215,54 @@ function OrderTrackingContent() {
 
               <div className="space-y-2 text-sm">
                 <p>
-                  <strong>Order ID:</strong>{" "}
+                  <strong>
+                    Order ID:
+                  </strong>{" "}
                   <span className="break-all">
                     {order.id}
                   </span>
                 </p>
 
                 <p>
-                  <strong>Total:</strong> $
-                  {Number(order.total_amount).toFixed(2)}
+                  <strong>
+                    Total:
+                  </strong>{" "}
+                  $
+                  {Number(
+                    order.total_amount
+                  ).toFixed(2)}
                 </p>
 
                 <p>
-                  <strong>Order Date:</strong>{" "}
-                  {new Date(order.created_at).toLocaleString()}
+                  <strong>
+                    Order Date:
+                  </strong>{" "}
+                  {new Date(
+                    order.created_at
+                  ).toLocaleString()}
                 </p>
               </div>
 
-              <div className="grid grid-cols-4 gap-2 text-center text-xs sm:text-sm">
-                {[
-                  "Pending",
-                  "Preparing",
-                  "Ready",
-                  "Completed",
-                ].map((status) => (
-                  <div
-                    key={status}
-                    className={`rounded-lg border p-3 ${
-                      order.status === status
-                        ? "font-bold"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    {status}
-                  </div>
-                ))}
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {statuses.map(
+                  (status, index) => {
+                    const completed =
+                      index <= currentStatusIndex;
+
+                    return (
+                      <div
+                        key={status}
+                        className={`rounded-lg border p-3 text-center text-xs sm:text-sm ${
+                          completed
+                            ? "font-bold"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {status}
+                      </div>
+                    );
+                  }
+                )}
               </div>
             </CardContent>
           </Card>

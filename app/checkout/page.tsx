@@ -82,16 +82,29 @@ export default function CheckoutPage() {
         return;
       }
 
+      localStorage.setItem(
+        'latest-order-id',
+        orderId
+      );
+
       clearCart();
 
-      toast.success('Order placed successfully');
+      toast.success(
+        'Order placed successfully'
+      );
 
       router.push(
         `/order-success?order=${orderId}`
       );
     } catch (error) {
-      console.error('Checkout error:', error);
-      toast.error('Something went wrong');
+      console.error(
+        'Checkout error:',
+        error
+      );
+
+      toast.error(
+        'Something went wrong'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -120,7 +133,9 @@ export default function CheckoutPage() {
                   placeholder="Your full name"
                   value={customerName}
                   onChange={(e) =>
-                    setCustomerName(e.target.value)
+                    setCustomerName(
+                      e.target.value
+                    )
                   }
                 />
               </div>
@@ -134,7 +149,9 @@ export default function CheckoutPage() {
                   placeholder="+961..."
                   value={customerPhone}
                   onChange={(e) =>
-                    setCustomerPhone(e.target.value)
+                    setCustomerPhone(
+                      e.target.value
+                    )
                   }
                 />
               </div>
@@ -149,7 +166,9 @@ export default function CheckoutPage() {
                   placeholder="example@email.com"
                   value={customerEmail}
                   onChange={(e) =>
-                    setCustomerEmail(e.target.value)
+                    setCustomerEmail(
+                      e.target.value
+                    )
                   }
                 />
               </div>
