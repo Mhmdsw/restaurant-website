@@ -67,11 +67,6 @@ export default function ReservationsPage() {
     values: z.infer<typeof formSchema>
   ) {
     try {
-      console.log(
-        "Reservation Data:",
-        values
-      )
-
       const { error } = await supabase
         .from("reservations")
         .insert([
@@ -99,10 +94,6 @@ export default function ReservationsPage() {
 
         return
       }
-
-      console.log(
-        "Reservation created successfully"
-      )
 
       alert(
         "Reservation made successfully!"
