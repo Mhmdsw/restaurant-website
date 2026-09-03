@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle2 } from 'lucide-react';
@@ -10,17 +11,15 @@ import {
   CardContent,
 } from '@/components/ui/card';
 
-export default function OrderSuccessPage() {
+function OrderSuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('order');
 
   return (
     <div className="container mx-auto px-4 py-24">
       <div className="mx-auto max-w-xl">
-
         <Card>
           <CardContent className="p-8 text-center">
-
             <CheckCircle2 className="mx-auto h-16 w-16 text-green-500" />
 
             <h1 className="mt-4 text-3xl font-bold">
@@ -44,7 +43,6 @@ export default function OrderSuccessPage() {
             )}
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-
               <Button asChild>
                 <Link href="/menu">
                   Order More Food
@@ -59,13 +57,24 @@ export default function OrderSuccessPage() {
                   Back to Home
                 </Link>
               </Button>
-
             </div>
-
           </CardContent>
         </Card>
-
       </div>
     </div>
+  );
+}
+
+export default function OrderSuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto px-4 py-24 text-center">
+          Loading order...
+        </div>
+      }
+    >
+      <OrderSuccessContent />
+    </Suspense>
   );
 }
