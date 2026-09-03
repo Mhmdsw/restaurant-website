@@ -19,6 +19,7 @@ const navLinks = [
   { href: '/reservations', label: 'Reservations' },
   { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
+  { href: '/order-tracking', label: 'Track Order' },
 ];
 
 export default function Navbar() {
