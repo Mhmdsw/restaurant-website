@@ -16,6 +16,7 @@ import {
   Mail,
   Utensils,
   LayoutDashboard,
+  ShoppingBag,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -70,14 +71,33 @@ type MenuItem = {
   is_spicy?: boolean;
 };
 
+type OrderItem = {
+  id: string;
+  item_name: string;
+  quantity: number;
+  unit_price: number;
+};
+
+type Order = {
+  id: string;
+  customer_name: string;
+  customer_phone: string | null;
+  customer_email: string | null;
+  total_amount: number;
+  status: string;
+  created_at: string;
+  order_items?: OrderItem[];
+};
+
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<
-    "overview" | "reservations" | "messages" | "menu"
+    "overview" | "reservations" | "messages" | "menu" | "orders"
   >("overview");
 
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
@@ -110,6 +130,7 @@ export default function AdminDashboard() {
         reservationsResult,
         messagesResult,
         menuResult,
+        ordersResult,
       ] = await Promise.all([
         supabase
           .from("reservations")
@@ -125,6 +146,19 @@ export default function AdminDashboard() {
           .from("menu_items")
           .select("*")
           .order("created_at", { ascending: true }),
+
+        supabase
+          .from("orders")
+          .select(`
+            *,
+            order_items (
+              id,
+              item_name,
+              quantity,
+              unit_price
+            )
+          `)
+          .order("created_at", { ascending: false }),
       ]);
 
       if (reservationsResult.error) {
@@ -139,8 +173,13 @@ export default function AdminDashboard() {
         console.error(menuResult.error);
       }
 
+      if (ordersResult.error) {
+        console.error("Orders load error:", ordersResult.error);
+      }
+
       setReservations(reservationsResult.data || []);
       setMessages(messagesResult.data || []);
+      setOrders(ordersResult.data || []);
 
       let databaseMenu = menuResult.data || [];
 
@@ -291,6 +330,31 @@ export default function AdminDashboard() {
       toast.error("Menu updated, but AI refresh failed");
       return false;
     }
+  }
+
+  // ============================================
+  // UPDATE ORDER STATUS
+  // ============================================
+
+  async function updateOrderStatus(orderId: string, status: string) {
+    const { error } = await supabase
+      .from("orders")
+      .update({ status })
+      .eq("id", orderId);
+
+    if (error) {
+      console.error("Order status update error:", error);
+      toast.error(error.message);
+      return;
+    }
+
+    setOrders((prev) =>
+      prev.map((order) =>
+        order.id === orderId ? { ...order, status } : order
+      )
+    );
+
+    toast.success(`Order marked as ${status}`);
   }
 
   // ============================================
@@ -548,6 +612,21 @@ export default function AdminDashboard() {
               {menuItems.length}
             </Badge>
           </Button>
+
+          <Button
+            variant={
+              activeTab === "orders"
+                ? "default"
+                : "outline"
+            }
+            onClick={() => setActiveTab("orders")}
+          >
+            <ShoppingBag className="mr-2 h-4 w-4" />
+            Orders
+            <Badge className="ml-2">
+              {orders.length}
+            </Badge>
+          </Button>
         </div>
       </div>
 
@@ -573,7 +652,7 @@ export default function AdminDashboard() {
               </p>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
@@ -627,6 +706,25 @@ export default function AdminDashboard() {
 
                   <p className="text-sm text-muted-foreground">
                     Menu items
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <ShoppingBag className="mr-2 h-5 w-5" />
+                    Orders
+                  </CardTitle>
+                </CardHeader>
+
+                <CardContent>
+                  <p className="text-4xl font-bold">
+                    {orders.length}
+                  </p>
+
+                  <p className="text-sm text-muted-foreground">
+                    Total orders
                   </p>
                 </CardContent>
               </Card>
@@ -794,6 +892,105 @@ export default function AdminDashboard() {
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete
                         </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* ======================================
+            ORDERS
+        ====================================== */}
+
+        {activeTab === "orders" && (
+          <section>
+            <div className="mb-6">
+              <h2 className="text-3xl font-bold">Orders</h2>
+              <p className="text-muted-foreground">
+                View customer orders and update their preparation status.
+              </p>
+            </div>
+
+            <div className="grid gap-5">
+              {orders.length === 0 ? (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <p className="text-muted-foreground">No orders yet.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                orders.map((order) => (
+                  <Card key={order.id}>
+                    <CardContent className="p-6">
+                      <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <h3 className="text-xl font-bold">
+                              {order.customer_name}
+                            </h3>
+                            <Badge variant="secondary">{order.status}</Badge>
+                          </div>
+
+                          <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+                            {order.customer_phone && <p>{order.customer_phone}</p>}
+                            {order.customer_email && <p>{order.customer_email}</p>}
+                            <p>
+                              Order ID: <span className="break-all">{order.id}</span>
+                            </p>
+                            <p>
+                              {new Date(order.created_at).toLocaleString()}
+                            </p>
+                          </div>
+
+                          <div className="mt-5 rounded-lg border p-4">
+                            <h4 className="mb-3 font-semibold">Order Items</h4>
+
+                            <div className="space-y-2">
+                              {(order.order_items || []).map((item) => (
+                                <div
+                                  key={item.id}
+                                  className="flex items-center justify-between gap-4 text-sm"
+                                >
+                                  <span>
+                                    {item.item_name} × {item.quantity}
+                                  </span>
+                                  <span className="font-medium">
+                                    ${(Number(item.unit_price) * item.quantity).toFixed(2)}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+
+                            <div className="mt-4 border-t pt-4">
+                              <div className="flex items-center justify-between text-lg font-bold">
+                                <span>Total</span>
+                                <span>${Number(order.total_amount).toFixed(2)}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="w-full xl:w-56">
+                          <label className="mb-2 block text-sm font-medium">
+                            Order Status
+                          </label>
+
+                          <select
+                            className="w-full rounded-md border bg-background p-2"
+                            value={order.status}
+                            onChange={(e) =>
+                              updateOrderStatus(order.id, e.target.value)
+                            }
+                          >
+                            <option value="Pending">Pending</option>
+                            <option value="Preparing">Preparing</option>
+                            <option value="Ready">Ready</option>
+                            <option value="Completed">Completed</option>
+                          </select>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
